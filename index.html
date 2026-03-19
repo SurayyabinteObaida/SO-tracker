@@ -600,13 +600,47 @@
     cursor: pointer;
     float: right;
   }
-  .carry-display {
-    font-size: 14px;
-    color: var(--green-mid);
-    font-style: italic;
-    line-height: 1.5;
-    padding: 8px 0;
-  }
+  .carry-display { font-size:14px; color:var(--green-mid); font-style:italic; line-height:1.5; padding:8px 0; }
+  .cap-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:0.5px solid var(--border); }
+  .cap-row:last-child { border-bottom:none; }
+  .cap-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .cap-info { flex:1; }
+  .cap-name { font-size:13px; font-weight:500; color:var(--text); }
+  .cap-sub { font-size:11px; color:var(--text-tertiary); margin-top:1px; }
+  .cap-bar-wrap { height:4px; background:var(--gray-light); border-radius:2px; margin-top:5px; }
+  .cap-bar-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+  .cap-amount { font-size:13px; font-weight:500; color:var(--text); min-width:64px; text-align:right; flex-shrink:0; }
+  .spend-btn { width:100%; padding:13px; font-size:15px; font-weight:500; background:var(--green); color:white; border:none; border-radius:var(--radius-sm); cursor:pointer; margin-bottom:10px; }
+  .cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .cat-opt { padding:10px 8px; font-size:13px; text-align:center; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; color:var(--text-secondary); background:transparent; transition:all 0.15s; }
+  .cat-opt.sel { background:var(--green-light); color:var(--green-mid); border-color:var(--green-light); font-weight:500; }
+  .amount-input { width:100%; padding:13px 14px; font-size:20px; font-weight:500; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-secondary); color:var(--text); outline:none; margin-bottom:8px; transition:border-color 0.15s; }
+  .amount-input:focus { border-color:var(--green); }
+  .note-input { width:100%; padding:10px 14px; font-size:14px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-secondary); color:var(--text); outline:none; margin-bottom:12px; font-family:inherit; transition:border-color 0.15s; }
+  .note-input:focus { border-color:var(--green); }
+  .spend-log-row { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 0; border-bottom:0.5px solid var(--border); }
+  .spend-log-row:last-child { border-bottom:none; }
+  .spend-log-left { flex:1; }
+  .spend-log-cat { font-size:11px; color:var(--text-tertiary); margin-bottom:2px; }
+  .spend-log-note { font-size:13px; color:var(--text); }
+  .spend-log-date { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
+  .spend-log-amt { font-size:13px; font-weight:500; color:var(--text); flex-shrink:0; margin-left:10px; }
+  .watchlist-row { padding:10px 0; border-bottom:0.5px solid var(--border); }
+  .watchlist-row:last-child { border-bottom:none; }
+  .wl-item { font-size:13px; color:var(--text); margin-bottom:3px; }
+  .wl-meta { font-size:11px; color:var(--text-tertiary); }
+  .wl-actions { display:flex; gap:8px; margin-top:8px; }
+  .wl-btn { padding:5px 14px; font-size:12px; border-radius:20px; border:1px solid var(--border); background:transparent; cursor:pointer; color:var(--text-secondary); }
+  .wl-btn.proceed { background:var(--amber-light); color:var(--amber); border-color:var(--amber-light); }
+  .wl-btn.drop { background:var(--green-light); color:var(--green-mid); border-color:var(--green-light); }
+  .alert-banner { background:var(--amber-light); border-left:3px solid var(--amber); border-radius:0 var(--radius-sm) var(--radius-sm) 0; padding:10px 12px; margin-bottom:10px; font-size:13px; color:var(--amber); line-height:1.5; display:none; }
+  .alert-banner.visible { display:block; }
+  .ceiling-input { width:100%; padding:11px 14px; font-size:15px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-secondary); color:var(--text); outline:none; margin-bottom:12px; transition:border-color 0.15s; }
+  .ceiling-input:focus { border-color:var(--green); }
+  .impulse-input { width:100%; padding:11px 14px; font-size:14px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-secondary); color:var(--text); outline:none; margin-bottom:8px; font-family:inherit; transition:border-color 0.15s; }
+  .impulse-input:focus { border-color:var(--green); }
+  .fin-section { display:none; }
+  .fin-section.active { display:block; }
 </style>
 </head>
 <body>
@@ -685,6 +719,7 @@
       <div class="tab active" onclick="switchTab('today',this)">Today</div>
       <div class="tab" onclick="switchTab('weekly',this)">Weekly</div>
       <div class="tab" onclick="switchTab('mentor',this)">Mentor</div>
+      <div class="tab" onclick="switchTab('finance',this)">Finance</div>
       <div class="tab" onclick="switchTab('settings',this)">Settings</div>
     </div>
   </div>
@@ -776,6 +811,77 @@
         <div class="word-count" id="ufg-wc">0 / 20</div>
         <button class="setup-btn" style="margin-top:4px;" onclick="updateGoals()">Update goals</button>
       </div>
+    </div>
+
+    <!-- FINANCE TAB -->
+    <div class="tab-content" id="tab-finance">
+
+      <!-- Alert banner — 80% trigger -->
+      <div class="alert-banner" id="finance-alert">
+        Food spending has crossed 80% of your ceiling before month end. Your mentor is waiting.
+      </div>
+
+      <!-- Ceiling not set state -->
+      <div class="fin-section active" id="fin-setup">
+        <div class="card">
+          <div class="card-label">Set this month's ceilings</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">Set once. The app holds you to these. Be honest with the numbers.</p>
+          <div class="field-label">Food + dining (PKR)</div>
+          <input class="ceiling-input" type="number" id="ceil-food" placeholder="e.g. 20000">
+          <div class="field-label">Giving — sadaqah + family (PKR)</div>
+          <input class="ceiling-input" type="number" id="ceil-giving" placeholder="e.g. 10000">
+          <div class="field-label">Digital — courses, subscriptions (PKR)</div>
+          <input class="ceiling-input" type="number" id="ceil-digital" placeholder="e.g. 5000">
+          <div class="field-label">Everything else (PKR)</div>
+          <input class="ceiling-input" type="number" id="ceil-other" placeholder="e.g. 10000">
+          <button class="spend-btn" style="margin-top:4px;" onclick="saveCeilings()">Set ceilings for this month</button>
+        </div>
+      </div>
+
+      <!-- Main finance view -->
+      <div class="fin-section" id="fin-main">
+
+        <!-- Summary cards -->
+        <div class="card" id="fin-summary">
+          <div class="card-label">This month — <span id="fin-month-label"></span></div>
+          <div id="cap-rows"></div>
+        </div>
+
+        <!-- Log spend -->
+        <div class="card">
+          <div class="card-label">Log a spend</div>
+          <div class="cat-grid">
+            <div class="cat-opt" id="cat-food" onclick="selectCat('food')">Food + dining</div>
+            <div class="cat-opt" id="cat-giving" onclick="selectCat('giving')">Giving</div>
+            <div class="cat-opt" id="cat-digital" onclick="selectCat('digital')">Digital</div>
+            <div class="cat-opt" id="cat-other" onclick="selectCat('other')">Other</div>
+          </div>
+          <input class="amount-input" type="number" id="spend-amount" placeholder="PKR amount">
+          <input class="note-input" type="text" id="spend-note" placeholder="Brief note — e.g. lunch with colleague">
+          <button class="spend-btn" onclick="logSpend()">Log spend</button>
+        </div>
+
+        <!-- 48-hour watchlist -->
+        <div class="card">
+          <div class="card-label">48-hour impulse list</div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Want to buy something unplanned? Log it here. Check back in 48 hours.</p>
+          <input class="impulse-input" type="text" id="impulse-item" placeholder="What do you want to buy?">
+          <button class="spend-btn" onclick="logImpulse()">Add to watchlist</button>
+          <div id="watchlist-rows"></div>
+        </div>
+
+        <!-- Recent spend log -->
+        <div class="card">
+          <div class="card-label">Recent spend</div>
+          <div id="spend-log-rows"></div>
+        </div>
+
+        <!-- Reset ceilings -->
+        <div style="text-align:center;margin-top:8px;margin-bottom:1rem;">
+          <button onclick="resetCeilings()" style="padding:8px 20px;font-size:13px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--text-secondary);cursor:pointer;">Reset ceilings for new month</button>
+        </div>
+      </div>
+
     </div>
 
     <!-- SETTINGS TAB -->
@@ -1023,6 +1129,7 @@ function renderApp() {
   loadDeenEntry();
   loadWeeklyState();
   loadMentorResponses();
+  renderFinance();
 }
 
 // ─── SCHEDULE ─────────────────────────────────────────────────────────────────
@@ -1361,6 +1468,190 @@ function switchTab(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(`tab-${name}`).classList.add('active');
   btn.classList.add('active');
+  if(name==='finance') renderFinance();
+}
+
+// ─── FINANCE ─────────────────────────────────────────────────────────────────
+const CAT_COLORS = { food:'#D85A30', giving:'#1D9E75', digital:'#7F77DD', other:'#888780' };
+const CAT_LABELS = { food:'Food + dining', giving:'Giving', digital:'Digital', other:'Other' };
+let selectedCat = null;
+
+function finMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function loadFinance() {
+  try { return JSON.parse(localStorage.getItem('amanah_finance') || '{}'); } catch { return {}; }
+}
+
+function saveFinance(data) {
+  localStorage.setItem('amanah_finance', JSON.stringify(data));
+}
+
+function renderFinance() {
+  const fin = loadFinance();
+  const mk = finMonthKey();
+  const monthData = fin[mk] || {};
+  const ceilings = monthData.ceilings;
+
+  if (!ceilings) {
+    document.getElementById('fin-setup').classList.add('active');
+    document.getElementById('fin-main').classList.remove('active');
+    return;
+  }
+
+  document.getElementById('fin-setup').classList.remove('active');
+  document.getElementById('fin-main').classList.add('active');
+
+  const now = new Date();
+  document.getElementById('fin-month-label').textContent =
+    now.toLocaleString('default',{month:'long',year:'numeric'});
+
+  const spend = monthData.spend || [];
+  const totals = { food:0, giving:0, digital:0, other:0 };
+  spend.forEach(s => { totals[s.category] = (totals[s.category]||0) + s.amount; });
+
+  let capHtml = '';
+  let foodPct = 0;
+  Object.keys(ceilings).forEach(cat => {
+    const spent = totals[cat] || 0;
+    const ceil = ceilings[cat];
+    const pct = ceil > 0 ? Math.min(100, Math.round(spent/ceil*100)) : 0;
+    if(cat==='food') foodPct = pct;
+    const barColor = pct >= 90 ? '#D85A30' : pct >= 80 ? '#BA7517' : CAT_COLORS[cat];
+    const remaining = Math.max(0, ceil - spent);
+    capHtml += `
+      <div class="cap-row">
+        <div class="cap-dot" style="background:${CAT_COLORS[cat]};"></div>
+        <div class="cap-info">
+          <div class="cap-name">${CAT_LABELS[cat]}</div>
+          <div class="cap-sub">${pct}% used — PKR ${remaining.toLocaleString()} left</div>
+          <div class="cap-bar-wrap"><div class="cap-bar-fill" style="width:${pct}%;background:${barColor};"></div></div>
+        </div>
+        <div class="cap-amount">PKR ${spent.toLocaleString()}<br><span style="font-size:10px;color:var(--text-tertiary);font-weight:400;">of ${ceil.toLocaleString()}</span></div>
+      </div>`;
+  });
+  document.getElementById('cap-rows').innerHTML = capHtml;
+
+  const alert = document.getElementById('finance-alert');
+  alert.className = 'alert-banner' + (foodPct >= 80 ? ' visible' : '');
+
+  const recentSpend = [...spend].reverse().slice(0,10);
+  document.getElementById('spend-log-rows').innerHTML = recentSpend.length
+    ? recentSpend.map(s => `
+      <div class="spend-log-row">
+        <div class="spend-log-left">
+          <div class="spend-log-cat">${CAT_LABELS[s.category]}</div>
+          <div class="spend-log-note">${s.note || '—'}</div>
+          <div class="spend-log-date">${s.date}</div>
+        </div>
+        <div class="spend-log-amt">PKR ${s.amount.toLocaleString()}</div>
+      </div>`).join('')
+    : '<p style="font-size:13px;color:var(--text-tertiary);padding:8px 0;">No spend logged yet.</p>';
+
+  renderWatchlist(monthData.watchlist || []);
+}
+
+function saveCeilings() {
+  const food = parseInt(document.getElementById('ceil-food').value)||0;
+  const giving = parseInt(document.getElementById('ceil-giving').value)||0;
+  const digital = parseInt(document.getElementById('ceil-digital').value)||0;
+  const other = parseInt(document.getElementById('ceil-other').value)||0;
+  if(!food && !giving && !digital && !other) { alert('Please enter at least one ceiling.'); return; }
+  const fin = loadFinance();
+  const mk = finMonthKey();
+  if(!fin[mk]) fin[mk] = {};
+  fin[mk].ceilings = { food, giving, digital, other };
+  saveFinance(fin);
+  renderFinance();
+}
+
+function selectCat(cat) {
+  selectedCat = cat;
+  document.querySelectorAll('.cat-opt').forEach(el => el.classList.remove('sel'));
+  document.getElementById(`cat-${cat}`).classList.add('sel');
+}
+
+function logSpend() {
+  if(!selectedCat) { alert('Please select a category.'); return; }
+  const amount = parseInt(document.getElementById('spend-amount').value)||0;
+  if(!amount) { alert('Please enter an amount.'); return; }
+  const note = document.getElementById('spend-note').value.trim();
+  const fin = loadFinance();
+  const mk = finMonthKey();
+  if(!fin[mk]) fin[mk] = {};
+  if(!fin[mk].spend) fin[mk].spend = [];
+  fin[mk].spend.push({ category:selectedCat, amount, note, date:todayKey() });
+  saveFinance(fin);
+  document.getElementById('spend-amount').value = '';
+  document.getElementById('spend-note').value = '';
+  document.querySelectorAll('.cat-opt').forEach(el => el.classList.remove('sel'));
+  selectedCat = null;
+  renderFinance();
+}
+
+function logImpulse() {
+  const item = document.getElementById('impulse-item').value.trim();
+  if(!item) return;
+  const fin = loadFinance();
+  const mk = finMonthKey();
+  if(!fin[mk]) fin[mk] = {};
+  if(!fin[mk].watchlist) fin[mk].watchlist = [];
+  fin[mk].watchlist.push({
+    id: Date.now().toString(),
+    item,
+    logged: Date.now(),
+    resolved: false
+  });
+  saveFinance(fin);
+  document.getElementById('impulse-item').value = '';
+  renderFinance();
+}
+
+function resolveImpulse(id, action) {
+  const fin = loadFinance();
+  const mk = finMonthKey();
+  const wl = fin[mk]?.watchlist || [];
+  const idx = wl.findIndex(w => w.id === id);
+  if(idx > -1) { wl[idx].resolved = true; wl[idx].resolution = action; }
+  fin[mk].watchlist = wl;
+  saveFinance(fin);
+  renderFinance();
+}
+
+function renderWatchlist(list) {
+  const active = list.filter(w => !w.resolved);
+  const now = Date.now();
+  const el = document.getElementById('watchlist-rows');
+  if(!active.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--text-tertiary);padding:8px 0;">Nothing on the watchlist.</p>';
+    return;
+  }
+  el.innerHTML = active.map(w => {
+    const elapsed = now - w.logged;
+    const hoursLeft = Math.max(0, 48 - Math.floor(elapsed/3600000));
+    const ready = elapsed >= 48*3600000;
+    return `
+      <div class="watchlist-row">
+        <div class="wl-item">${w.item}</div>
+        <div class="wl-meta">${ready ? '48 hours passed — do you still want this?' : `${hoursLeft} hours remaining`}</div>
+        ${ready ? `
+        <div class="wl-actions">
+          <button class="wl-btn proceed" onclick="resolveImpulse('${w.id}','proceed')">Still want it</button>
+          <button class="wl-btn drop" onclick="resolveImpulse('${w.id}','dropped')">No longer want it</button>
+        </div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function resetCeilings() {
+  if(!confirm('Reset ceilings for a new month? Existing spend log will be archived.')) return;
+  const fin = loadFinance();
+  const mk = finMonthKey();
+  delete fin[mk]?.ceilings;
+  saveFinance(fin);
+  renderFinance();
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
