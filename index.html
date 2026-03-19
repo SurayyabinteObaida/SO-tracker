@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Amanah">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Amanah</title>
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-mid: #0F6E56;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --gray: #888780;
+    --gray-light: #F1EFE8;
+    --gray-mid: #5F5E5A;
+    --border: rgba(0,0,0,0.1);
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --text-tertiary: #999;
+    --bg: #ffffff;
+    --bg-secondary: #f7f7f5;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* SCREENS */
+  .screen { display: none; height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* PASSPHRASE SCREEN */
+  #screen-pass {
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    background: var(--bg);
+  }
+  .pass-wrap { width: 100%; max-width: 360px; }
+  .pass-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .pass-arabic {
+    font-size: 18px;
+    color: var(--green);
+    margin-bottom: 2rem;
+    direction: rtl;
+  }
+  .pass-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  .pass-input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    outline: none;
+    margin-bottom: 12px;
+    transition: border-color 0.15s;
+  }
+  .pass-input:focus { border-color: var(--green); }
+  .pass-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 500;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: opacity 0.15s;
+    margin-bottom: 10px;
+  }
+  .pass-btn:active { opacity: 0.85; }
+  .pass-btn.secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    font-size: 14px;
+    padding: 12px;
+  }
+  .pass-error {
+    font-size: 13px;
+    color: #c0392b;
+    margin-top: 8px;
+    min-height: 20px;
+    text-align: center;
+  }
+  .pass-hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-align: center;
+    margin-top: 1.5rem;
+    line-height: 1.6;
+  }
+  .pass-mode-toggle {
+    font-size: 13px;
+    color: var(--green);
+    text-align: center;
+    margin-top: 1rem;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  /* SETUP SCREEN */
+  #screen-setup {
+    padding: 2rem 1.5rem;
+    background: var(--bg);
+  }
+  .setup-step { display: none; }
+  .setup-step.active { display: block; }
+  .setup-header {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .setup-sub {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .field-input {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    outline: none;
+    margin-bottom: 16px;
+    transition: border-color 0.15s;
+  }
+  .field-input:focus { border-color: var(--green); }
+  .field-input[type=password] { letter-spacing: 2px; }
+  .field-textarea {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 15px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    outline: none;
+    margin-bottom: 6px;
+    resize: none;
+    min-height: 80px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+  .field-textarea:focus { border-color: var(--green); }
+  .word-count {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    text-align: right;
+    margin-bottom: 16px;
+  }
+  .word-count.over { color: #c0392b; }
+  .setup-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 500;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .setup-btn:active { opacity: 0.85; }
+  .setup-progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 2rem;
+  }
+  .sp-dot {
+    height: 3px;
+    flex: 1;
+    border-radius: 2px;
+    background: var(--gray-light);
+  }
+  .sp-dot.done { background: var(--green); }
+  .sp-dot.active { background: var(--green); opacity: 0.5; }
+
+  /* MAIN APP */
+  #screen-app {
+    background: var(--bg-secondary);
+  }
+  .app-header {
+    background: var(--bg);
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+  }
+  .app-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .app-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .app-date {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .lock-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .tab-bar {
+    display: flex;
+    gap: 0;
+  }
+  .tab {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-align: center;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .tab.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+  .app-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem 1rem 2rem;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 1rem 1.125rem;
+    margin-bottom: 10px;
+    border: 0.5px solid var(--border);
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* TODAY TAB */
+  .zone-header {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.5rem 0 0.4rem;
+    margin-top: 4px;
+  }
+  .anchor-block {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 0.875rem 1rem;
+    margin-bottom: 8px;
+    border: 0.5px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    transition: opacity 0.2s;
+  }
+  .anchor-block.prayer {
+    border-left: 3px solid var(--green);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .anchor-block.research { border-left: 3px solid #378ADD; border-radius: 0 var(--radius) var(--radius) 0; }
+  .anchor-block.deep { border-left: 3px solid #7F77DD; border-radius: 0 var(--radius) var(--radius) 0; }
+  .anchor-block.physical { border-left: 3px solid #BA7517; border-radius: 0 var(--radius) var(--radius) 0; }
+  .anchor-block.financial { border-left: 3px solid #D4537E; border-radius: 0 var(--radius) var(--radius) 0; }
+  .anchor-block.affairs { border-left: 3px solid #888780; border-radius: 0 var(--radius) var(--radius) 0; }
+  .anchor-block.done { opacity: 0.45; }
+  .ab-left { flex: 1; }
+  .ab-time { font-size: 11px; color: var(--text-tertiary); margin-bottom: 2px; }
+  .ab-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .ab-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; line-height: 1.4; }
+  .ab-right { flex-shrink: 0; display: flex; align-items: center; }
+  .tap-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    font-size: 12px;
+    color: transparent;
+  }
+  .tap-btn.tapped {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+  .tap-btn.missed {
+    background: var(--gray-light);
+    border-color: var(--gray-light);
+  }
+
+  /* DEEN ENTRY */
+  .deen-entry-wrap { margin-top: 8px; }
+  .deen-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    outline: none;
+    resize: none;
+    min-height: 72px;
+    line-height: 1.5;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  .deen-textarea:focus { border-color: var(--green); }
+  .deen-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .deen-wc { font-size: 11px; color: var(--text-tertiary); }
+  .deen-wc.over { color: #c0392b; }
+  .deen-save {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  /* WEEKLY TAB */
+  .week-area {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 1rem 1.125rem;
+    margin-bottom: 10px;
+    border: 0.5px solid var(--border);
+  }
+  .wa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .wa-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .momentum-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .mb-green { background: var(--green-light); color: var(--green-mid); }
+  .mb-amber { background: var(--amber-light); color: var(--amber); }
+  .mb-gray { background: var(--gray-light); color: var(--gray-mid); }
+  .week-dots {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .wd {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--gray-light);
+  }
+  .wd.done { background: var(--green); }
+  .wd.missed { background: var(--gray-light); }
+  .wd.today { background: var(--green); opacity: 0.4; }
+  .depth-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .depth-opt {
+    flex: 1;
+    padding: 7px 4px;
+    font-size: 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-secondary);
+    background: transparent;
+    transition: all 0.15s;
+  }
+  .depth-opt.sel-surface { background: var(--gray-light); color: var(--gray-mid); border-color: var(--gray-light); }
+  .depth-opt.sel-engaged { background: var(--amber-light); color: var(--amber); border-color: var(--amber-light); }
+  .depth-opt.sel-deep { background: var(--green-light); color: var(--green-mid); border-color: var(--green-light); }
+  .week-journal-q {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 0.5px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* MOMENTUM */
+  .momentum-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .mom-opt {
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 13px;
+    text-align: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-secondary);
+    background: transparent;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .mom-opt.sel-better { background: var(--green-light); color: var(--green-mid); border-color: var(--green-light); }
+  .mom-opt.sel-same { background: var(--amber-light); color: var(--amber); border-color: var(--amber-light); }
+  .mom-opt.sel-worse { background: var(--amber-light); color: var(--amber); border-color: var(--amber-light); }
+
+  /* MENTOR TAB */
+  .mentor-area {
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 1rem 1.125rem;
+    margin-bottom: 10px;
+    border: 0.5px solid var(--border);
+  }
+  .mentor-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
+  .mentor-goal { font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 12px; }
+  .mentor-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    outline: none;
+    resize: none;
+    min-height: 80px;
+    line-height: 1.5;
+    font-family: inherit;
+    transition: border-color 0.15s;
+    margin-bottom: 6px;
+  }
+  .mentor-textarea:focus { border-color: var(--green); }
+  .mentor-wc { font-size: 11px; color: var(--text-tertiary); margin-bottom: 10px; text-align: right; }
+  .mentor-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .mentor-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .mentor-response {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--green-light);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--green-mid);
+    line-height: 1.6;
+    display: none;
+  }
+  .mentor-response.visible { display: block; }
+  .mentor-loading {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    text-align: center;
+    padding: 12px;
+    display: none;
+  }
+  .mentor-loading.visible { display: block; }
+
+  /* SETTINGS */
+  .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 14px;
+    color: var(--text);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-val { font-size: 13px; color: var(--text-secondary); }
+  .settings-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .danger { color: #c0392b; }
+
+  /* UTILITY */
+  .mt8 { margin-top: 8px; }
+  .carry-input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    color: var(--text);
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.15s;
+    margin-top: 8px;
+  }
+  .carry-input:focus { border-color: var(--green); }
+  .save-carry {
+    margin-top: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    float: right;
+  }
+  .carry-display {
+    font-size: 14px;
+    color: var(--green-mid);
+    font-style: italic;
+    line-height: 1.5;
+    padding: 8px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSPHRASE SCREEN -->
+<div id="screen-pass" class="screen active">
+  <div class="pass-wrap">
+    <div class="pass-arabic">أَمَانَة</div>
+    <div class="pass-title" id="pass-title">Welcome back</div>
+    <p class="pass-label" id="pass-sublabel">Enter your passphrase to unlock</p>
+    <input class="pass-input" type="password" id="pass-input" placeholder="Passphrase" autocomplete="current-password">
+    <div class="pass-error" id="pass-error"></div>
+    <button class="pass-btn" onclick="handlePassphrase()">Unlock</button>
+    <button class="pass-btn secondary" id="pass-alt-btn" onclick="showPassAlt()">I forgot my passphrase</button>
+    <p class="pass-hint">Your data never leaves this device.<br>The passphrase decrypts your API key in memory only.</p>
+    <div class="pass-mode-toggle" id="pass-mode-toggle" onclick="togglePassMode()" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div id="screen-setup" class="screen">
+  <div style="padding: 2rem 1.5rem;">
+    <div class="setup-progress" id="setup-progress"></div>
+
+    <!-- Step 1: Name -->
+    <div class="setup-step active" id="setup-step-1">
+      <div class="setup-header">Bismillah. Let's begin.</div>
+      <p class="setup-sub">This app is your daily compass — built around your time, your deen, and your goals. It will take 3 minutes to set up.</p>
+      <div class="field-label">Your name</div>
+      <input class="field-input" type="text" id="s-name" placeholder="e.g. Fatima">
+      <div class="field-label">Passphrase</div>
+      <input class="field-input" type="password" id="s-pass1" placeholder="Choose a passphrase you will remember">
+      <div class="field-label">Confirm passphrase</div>
+      <input class="field-input" type="password" id="s-pass2" placeholder="Repeat passphrase">
+      <div class="pass-error" id="setup-error-1"></div>
+      <button class="setup-btn" onclick="setupNext(1)">Continue</button>
+    </div>
+
+    <!-- Step 2: API Key -->
+    <div class="setup-step" id="setup-step-2">
+      <div class="setup-header">OpenAI API key</div>
+      <p class="setup-sub">Your key is encrypted with your passphrase using AES-GCM 256-bit before being stored. It never leaves your device unencrypted.</p>
+      <div class="field-label">API key</div>
+      <input class="field-input" type="password" id="s-apikey" placeholder="sk-...">
+      <div class="pass-error" id="setup-error-2"></div>
+      <button class="setup-btn" onclick="setupNext(2)">Encrypt and save</button>
+    </div>
+
+    <!-- Step 3: Research goal -->
+    <div class="setup-step" id="setup-step-3">
+      <div class="setup-header">This month's research goal</div>
+      <p class="setup-sub">One sentence. Specific and falsifiable. Not "make progress" — something you could verify at month end.</p>
+      <div class="field-label">Monthly research goal</div>
+      <textarea class="field-textarea" id="s-research-goal" placeholder="e.g. Complete the related work section of the LLM security paper by 31st" oninput="countWords(this,'rg-wc',30)"></textarea>
+      <div class="word-count" id="rg-wc">0 / 30 words</div>
+      <div class="field-label">This month's financial intention</div>
+      <textarea class="field-textarea" id="s-finance-goal" placeholder="e.g. Keep food and dining under 20,000 PKR this month" oninput="countWords(this,'fg-wc',20)"></textarea>
+      <div class="word-count" id="fg-wc">0 / 20 words</div>
+      <div class="pass-error" id="setup-error-3"></div>
+      <button class="setup-btn" onclick="setupNext(3)">Finish setup</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="screen-app" class="screen">
+  <div class="app-header">
+    <div class="app-title-row">
+      <div>
+        <div class="app-title" id="app-greeting">Amanah</div>
+        <div class="app-date" id="app-date"></div>
+      </div>
+      <div class="lock-btn" onclick="lockApp()" title="Lock">&#128274;</div>
+    </div>
+    <div class="tab-bar">
+      <div class="tab active" onclick="switchTab('today',this)">Today</div>
+      <div class="tab" onclick="switchTab('weekly',this)">Weekly</div>
+      <div class="tab" onclick="switchTab('mentor',this)">Mentor</div>
+      <div class="tab" onclick="switchTab('settings',this)">Settings</div>
+    </div>
+  </div>
+
+  <div class="app-body">
+
+    <!-- TODAY TAB -->
+    <div class="tab-content active" id="tab-today">
+      <!-- Carry forward intention -->
+      <div class="card" id="carry-card" style="display:none;">
+        <div class="card-label">Carry forward from last week</div>
+        <div class="carry-display" id="carry-display"></div>
+      </div>
+
+      <!-- Anchor blocks rendered by JS -->
+      <div id="today-blocks"></div>
+
+      <!-- Deen entry -->
+      <div class="card" id="deen-entry-card">
+        <div class="card-label">Deen — today's reflection (max 50 words)</div>
+        <div class="deen-entry-wrap">
+          <textarea class="deen-textarea" id="deen-text" placeholder="What did you recite today? What struck you? What are you carrying from it?" oninput="deenWordCount()"></textarea>
+          <div class="deen-footer">
+            <span class="deen-wc" id="deen-wc">0 / 50</span>
+            <button class="deen-save" onclick="saveDeen()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEEKLY TAB -->
+    <div class="tab-content" id="tab-weekly">
+      <div class="card">
+        <div class="card-label">Week of <span id="week-label"></span></div>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Rate each area from this week. Be honest — this feeds your journal, not a leaderboard.</p>
+
+        <div class="momentum-row">
+          <div class="mom-opt" id="mom-better" onclick="setMomentum('better')">Better</div>
+          <div class="mom-opt" id="mom-same" onclick="setMomentum('same')">Same</div>
+          <div class="mom-opt" id="mom-worse" onclick="setMomentum('worse')">Harder</div>
+        </div>
+        <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:16px;">Overall — is this week better, same, or harder than last week?</div>
+      </div>
+
+      <div id="weekly-areas"></div>
+
+      <!-- Carry forward -->
+      <div class="card">
+        <div class="card-label">One intention into next week</div>
+        <p style="font-size:13px;color:var(--text-secondary);">One sentence. Take it to your journal tonight.</p>
+        <input class="carry-input" type="text" id="carry-input" placeholder="What are you carrying forward with intention?">
+        <div style="overflow:hidden;"><button class="save-carry" onclick="saveCarry()">Save</button></div>
+      </div>
+    </div>
+
+    <!-- MENTOR TAB -->
+    <div class="tab-content" id="tab-mentor">
+      <!-- Research mentor -->
+      <div class="mentor-area">
+        <div class="mentor-label">Research mentor</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">This month's goal</div>
+        <div class="mentor-goal" id="mentor-research-goal">—</div>
+        <textarea class="mentor-textarea" id="mentor-research-input" placeholder="In 30–40 words: what did you actually work on this month toward this goal?" oninput="mentorWC(this,'mentor-research-wc',40)"></textarea>
+        <div class="mentor-wc" id="mentor-research-wc">0 / 40 words</div>
+        <button class="mentor-btn" id="mentor-research-btn" onclick="callMentor('research')">Get reflection</button>
+        <div class="mentor-loading" id="mentor-research-loading">Thinking...</div>
+        <div class="mentor-response" id="mentor-research-response"></div>
+      </div>
+
+      <!-- Financial mentor -->
+      <div class="mentor-area">
+        <div class="mentor-label">Financial mentor — midmonth check</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px;">This month's intention</div>
+        <div class="mentor-goal" id="mentor-finance-goal">—</div>
+        <textarea class="mentor-textarea" id="mentor-finance-input" placeholder="In 30–40 words: how is your food spending tracking? What's driving it?" oninput="mentorWC(this,'mentor-finance-wc',40)"></textarea>
+        <div class="mentor-wc" id="mentor-finance-wc">0 / 40 words</div>
+        <button class="mentor-btn" id="mentor-finance-btn" onclick="callMentor('finance')">Get reflection</button>
+        <div class="mentor-loading" id="mentor-finance-loading">Thinking...</div>
+        <div class="mentor-response" id="mentor-finance-response"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Update monthly goals</div>
+        <div class="field-label" style="margin-top:4px;">Research goal</div>
+        <textarea class="field-textarea" id="update-research-goal" oninput="countWords(this,'urg-wc',30)" style="min-height:60px;"></textarea>
+        <div class="word-count" id="urg-wc">0 / 30</div>
+        <div class="field-label">Financial intention</div>
+        <textarea class="field-textarea" id="update-finance-goal" oninput="countWords(this,'ufg-wc',20)" style="min-height:60px;"></textarea>
+        <div class="word-count" id="ufg-wc">0 / 20</div>
+        <button class="setup-btn" style="margin-top:4px;" onclick="updateGoals()">Update goals</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="tab-content" id="tab-settings">
+      <div class="card">
+        <div class="card-label">Account</div>
+        <div class="settings-row">
+          <span>Name</span>
+          <span class="settings-val" id="settings-name">—</span>
+        </div>
+        <div class="settings-row">
+          <span>API key</span>
+          <span class="settings-val">Encrypted</span>
+        </div>
+        <div class="settings-row">
+          <span>Storage</span>
+          <span class="settings-val">On this device only</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">Data</div>
+        <div class="settings-row">
+          <span>Export encrypted key blob</span>
+          <button class="settings-btn" onclick="exportBlob()">Export</button>
+        </div>
+        <div class="settings-row">
+          <span>Clear all data</span>
+          <button class="settings-btn danger" onclick="clearAll()">Clear</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label">About</div>
+        <div class="settings-row">
+          <span>Version</span>
+          <span class="settings-val">1.0 — Layer 1</span>
+        </div>
+        <div class="settings-row">
+          <span>Encryption</span>
+          <span class="settings-val">AES-GCM 256-bit</span>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:1.5rem;">
+        <button onclick="lockApp()" style="padding:10px 24px;font-size:14px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--text-secondary);cursor:pointer;">Lock app</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── CRYPTO ───────────────────────────────────────────────────────────────────
+const SALT = new TextEncoder().encode('amanah-salt-2024');
+
+async function deriveKey(passphrase) {
+  const base = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: SALT, iterations: 200000, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+  );
+}
+
+async function encrypt(text, passphrase) {
+  const key = await deriveKey(passphrase);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const enc = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv }, key, new TextEncoder().encode(text)
+  );
+  const buf = new Uint8Array(iv.byteLength + enc.byteLength);
+  buf.set(iv, 0); buf.set(new Uint8Array(enc), iv.byteLength);
+  return btoa(String.fromCharCode(...buf));
+}
+
+async function decrypt(blob, passphrase) {
+  const buf = Uint8Array.from(atob(blob), c => c.charCodeAt(0));
+  const iv = buf.slice(0, 12);
+  const data = buf.slice(12);
+  const key = await deriveKey(passphrase);
+  const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+  return new TextDecoder().decode(dec);
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let SESSION_KEY = null; // decrypted API key in memory only
+let APP_DATA = {};
+
+function loadAppData() {
+  try { APP_DATA = JSON.parse(localStorage.getItem('amanah_data') || '{}'); } catch { APP_DATA = {}; }
+}
+
+function saveAppData() {
+  localStorage.setItem('amanah_data', JSON.stringify(APP_DATA));
+}
+
+function todayKey() {
+  return new Date().toISOString().slice(0,10);
+}
+
+function weekKey() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  const mon = new Date(d.setDate(diff));
+  return mon.toISOString().slice(0,10);
+}
+
+// ─── PASSPHRASE SCREEN ────────────────────────────────────────────────────────
+loadAppData();
+const isFirstTime = !localStorage.getItem('amanah_encrypted_key');
+
+function initPassScreen() {
+  if (isFirstTime) {
+    document.getElementById('screen-pass').style.display = 'none';
+    document.getElementById('screen-setup').classList.add('active');
+    document.getElementById('screen-setup').style.display = 'flex';
+    initSetupProgress();
+  } else {
+    document.getElementById('pass-title').textContent = 'Welcome back';
+    document.getElementById('pass-input').addEventListener('keydown', e => { if(e.key==='Enter') handlePassphrase(); });
+  }
+}
+
+async function handlePassphrase() {
+  const pass = document.getElementById('pass-input').value;
+  const err = document.getElementById('pass-error');
+  err.textContent = '';
+  if (!pass) { err.textContent = 'Please enter your passphrase.'; return; }
+  const blob = localStorage.getItem('amanah_encrypted_key');
+  if (!blob) { err.textContent = 'No key found. Please set up the app again.'; return; }
+  try {
+    SESSION_KEY = await decrypt(blob, pass);
+    enterApp();
+  } catch {
+    err.textContent = 'Wrong passphrase. Try again.';
+    document.getElementById('pass-input').value = '';
+  }
+}
+
+function showPassAlt() {
+  const err = document.getElementById('pass-error');
+  err.textContent = 'To reset: clear app data in Settings after unlocking, or clear browser storage manually. Your API key will need to be re-entered.';
+  err.style.color = 'var(--amber)';
+}
+
+function togglePassMode() {}
+
+// ─── SETUP ───────────────────────────────────────────────────────────────────
+let setupStep = 1;
+const TOTAL_STEPS = 3;
+
+function initSetupProgress() {
+  const prog = document.getElementById('setup-progress');
+  prog.innerHTML = Array.from({length: TOTAL_STEPS}, (_,i) =>
+    `<div class="sp-dot ${i===0?'active':''}" id="sp-${i+1}"></div>`
+  ).join('');
+}
+
+function updateSetupProgress(step) {
+  for(let i=1;i<=TOTAL_STEPS;i++) {
+    const d = document.getElementById(`sp-${i}`);
+    if(i<step) { d.className='sp-dot done'; }
+    else if(i===step) { d.className='sp-dot active'; }
+    else { d.className='sp-dot'; }
+  }
+}
+
+async function setupNext(step) {
+  const err = id => document.getElementById(`setup-error-${step}`);
+  if (step === 1) {
+    const name = document.getElementById('s-name').value.trim();
+    const p1 = document.getElementById('s-pass1').value;
+    const p2 = document.getElementById('s-pass2').value;
+    if (!name) { err().textContent = 'Please enter your name.'; return; }
+    if (p1.length < 8) { err().textContent = 'Passphrase must be at least 8 characters.'; return; }
+    if (p1 !== p2) { err().textContent = 'Passphrases do not match.'; return; }
+    APP_DATA.name = name;
+    APP_DATA.setupPassphrase = p1;
+    saveAppData();
+  }
+  if (step === 2) {
+    const key = document.getElementById('s-apikey').value.trim();
+    if (!key.startsWith('sk-')) { err().textContent = 'Please enter a valid OpenAI API key starting with sk-'; return; }
+    const pass = APP_DATA.setupPassphrase;
+    try {
+      const blob = await encrypt(key, pass);
+      localStorage.setItem('amanah_encrypted_key', blob);
+      SESSION_KEY = key;
+    } catch(e) { err().textContent = 'Encryption failed. Please try again.'; return; }
+    delete APP_DATA.setupPassphrase;
+    saveAppData();
+  }
+  if (step === 3) {
+    const rg = document.getElementById('s-research-goal').value.trim();
+    const fg = document.getElementById('s-finance-goal').value.trim();
+    if (!rg) { err().textContent = 'Please enter your research goal.'; return; }
+    if (!fg) { err().textContent = 'Please enter your financial intention.'; return; }
+    APP_DATA.researchGoal = rg;
+    APP_DATA.financeGoal = fg;
+    saveAppData();
+    enterApp();
+    return;
+  }
+  document.getElementById(`setup-step-${step}`).classList.remove('active');
+  setupStep = step + 1;
+  document.getElementById(`setup-step-${setupStep}`).classList.add('active');
+  updateSetupProgress(setupStep);
+}
+
+// ─── ENTER APP ────────────────────────────────────────────────────────────────
+function enterApp() {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display=''; });
+  document.getElementById('screen-app').classList.add('active');
+  renderApp();
+}
+
+function lockApp() {
+  SESSION_KEY = null;
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); s.style.display=''; });
+  document.getElementById('screen-pass').classList.add('active');
+  document.getElementById('pass-input').value = '';
+  document.getElementById('pass-error').textContent = '';
+}
+
+// ─── APP RENDER ───────────────────────────────────────────────────────────────
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function renderApp() {
+  const now = new Date();
+  const name = APP_DATA.name || 'there';
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('app-greeting').textContent = `${greeting}, ${name}`;
+  document.getElementById('app-date').textContent = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('settings-name').textContent = name;
+  document.getElementById('week-label').textContent = getWeekLabel();
+  document.getElementById('mentor-research-goal').textContent = APP_DATA.researchGoal || '—';
+  document.getElementById('mentor-finance-goal').textContent = APP_DATA.financeGoal || '—';
+  if(APP_DATA.researchGoal) document.getElementById('update-research-goal').value = APP_DATA.researchGoal;
+  if(APP_DATA.financeGoal) document.getElementById('update-finance-goal').value = APP_DATA.financeGoal;
+  renderTodayBlocks();
+  renderWeeklyAreas();
+  renderCarryForward();
+  loadDeenEntry();
+  loadWeeklyState();
+  loadMentorResponses();
+}
+
+// ─── SCHEDULE ─────────────────────────────────────────────────────────────────
+function getSchedule() {
+  const day = new Date().getDay();
+  const isWeekend = day === 0 || day === 6;
+  const deepType = [1,3,5].includes(day) ? 'Research writing' : 'Dev or reading';
+  const h = new Date().getHours();
+
+  const all = [
+    { id:'fajr', zone:'Morning', time:'Fajr', title:'Prayer + Qur\'an with translation', desc:'Before any screen. The day begins here.', type:'prayer', tappable:false },
+    { id:'deen', zone:'Morning', time:'+15 min', title:'Deen reflection', desc:'Under 50 words — what struck you today.', type:'prayer', tappable:false, special:'deen' },
+    { id:'commute-m', zone:'Morning', time:'Commute', title:'Audio — Seerah or Qur\'an', desc:'No news. No social media. Learning only.', type:'prayer', tappable:true },
+    ...(isWeekend ? [
+      { id:'seerah', zone:'Morning', time:'+30 min', title:'Seerah or companions reading', desc:'Physical book. Slow reading. This is the deep knowledge time.', type:'prayer', tappable:true },
+    ] : []),
+    { id:'zuhr', zone:'At work', time:'Zuhr', title:'Prayer — hard stop', desc:'Whatever is happening, it pauses.', type:'prayer', tappable:false },
+    { id:'lunch', zone:'At work', time:'Lunch', title:'Eat without screens', desc:'20 minutes. Then review your evening plan.', type:'physical', tappable:true },
+    { id:'asr', zone:'At work', time:'Asr', title:'Prayer — hard stop', desc:'Leave whatever is happening.', type:'prayer', tappable:false },
+    { id:'physical', zone:'At work', time:'Post-Asr', title:'10–15 min movement + outside', desc:'Walk, stretch, courtyard. Deliberate and outdoors if possible.', type:'physical', tappable:true },
+    { id:'maghrib', zone:'Evening', time:'Maghrib', title:'Prayer immediately on arriving home', desc:'Before sitting. Before eating. This marks the shift.', type:'prayer', tappable:false },
+    { id:'home', zone:'Evening', time:'+30 min', title:'Home responsibilities + family', desc:'Present, not distracted. Earn the deep work block.', type:'physical', tappable:true },
+    { id:'isha', zone:'Evening', time:'Isha', title:'Prayer — then sit at the desk', desc:'Isha is the gate. Go directly to the desk after.', type:'prayer', tappable:false },
+    { id:'deep', zone:'Evening', time:'~8–10pm', title:`Deep work — ${deepType}`, desc:'Phone away. One task. 60 minutes minimum.', type:'deep', tappable:true },
+    { id:'affairs', zone:'Evening', time:'~10pm', title:'Current affairs — 20 min only', desc:'Two sources. Close when time is up, not when satisfied.', type:'affairs', tappable:true },
+  ];
+  return all;
+}
+
+function renderTodayBlocks() {
+  const tk = todayKey();
+  const dayData = APP_DATA.days || {};
+  const today = dayData[tk] || {};
+  const schedule = getSchedule();
+  const container = document.getElementById('today-blocks');
+  let lastZone = '';
+  let html = '';
+
+  schedule.forEach(block => {
+    if(block.special === 'deen') return;
+    if(block.zone !== lastZone) {
+      html += `<div class="zone-header">${block.zone}</div>`;
+      lastZone = block.zone;
+    }
+    const tapped = today[block.id] === 'done';
+    const missed = today[block.id] === 'missed';
+    const doneClass = tapped ? 'done' : '';
+    const btnClass = tapped ? 'tapped' : missed ? 'missed' : '';
+    const btnContent = tapped ? '✓' : '';
+    html += `
+      <div class="anchor-block ${block.type} ${doneClass}" id="block-${block.id}">
+        <div class="ab-left">
+          <div class="ab-time">${block.time}</div>
+          <div class="ab-title">${block.title}</div>
+          <div class="ab-desc">${block.desc}</div>
+        </div>
+        ${block.tappable ? `
+        <div class="ab-right">
+          <div class="tap-btn ${btnClass}" id="tap-${block.id}" onclick="tapBlock('${block.id}')">${btnContent}</div>
+        </div>` : ''}
+      </div>`;
+  });
+  container.innerHTML = html;
+
+  const deenCard = document.getElementById('deen-entry-card');
+  deenCard.style.display = 'block';
+}
+
+function tapBlock(id) {
+  const tk = todayKey();
+  if (!APP_DATA.days) APP_DATA.days = {};
+  if (!APP_DATA.days[tk]) APP_DATA.days[tk] = {};
+  const current = APP_DATA.days[tk][id];
+  APP_DATA.days[tk][id] = current === 'done' ? null : 'done';
+  saveAppData();
+  renderTodayBlocks();
+  loadDeenEntry();
+}
+
+// ─── DEEN ENTRY ───────────────────────────────────────────────────────────────
+function deenWordCount() {
+  const text = document.getElementById('deen-text').value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const wc = document.getElementById('deen-wc');
+  wc.textContent = `${words} / 50`;
+  wc.className = `deen-wc ${words > 50 ? 'over' : ''}`;
+}
+
+function saveDeen() {
+  const text = document.getElementById('deen-text').value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  if (words > 50) { alert('Please keep it under 50 words.'); return; }
+  if (!text) return;
+  const tk = todayKey();
+  if (!APP_DATA.days) APP_DATA.days = {};
+  if (!APP_DATA.days[tk]) APP_DATA.days[tk] = {};
+  APP_DATA.days[tk].deen_entry = text;
+  saveAppData();
+  const btn = document.querySelector('.deen-save');
+  btn.textContent = 'Saved';
+  btn.style.background = 'var(--gray)';
+  setTimeout(() => { btn.textContent = 'Save'; btn.style.background = 'var(--green)'; }, 1500);
+}
+
+function loadDeenEntry() {
+  const tk = todayKey();
+  const entry = APP_DATA.days?.[tk]?.deen_entry || '';
+  document.getElementById('deen-text').value = entry;
+  deenWordCount();
+}
+
+// ─── WEEKLY ───────────────────────────────────────────────────────────────────
+const AREAS = [
+  { id:'deen', label:'Deen', q:'Did my practices this week reflect who I am trying to become, or just who I currently am?' },
+  { id:'research', label:'Research', q:'Did I protect deep work, or did I hand it to distraction and other people\'s urgencies?' },
+  { id:'deep', label:'Deep work', q:'How many evenings did I actually sit at the desk for 60+ minutes with one task?' },
+  { id:'physical', label:'Physical + nature', q:'Did I treat this body as an amanah this week?' },
+  { id:'finance', label:'Financial', q:'Did every rupee I spent have a reason I could defend?' },
+  { id:'affairs', label:'Current affairs', q:'Can I articulate one thing I now understand more deeply than seven days ago?' },
+];
+
+function getWeekLabel() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day===0?-6:1);
+  const mon = new Date(new Date().setDate(diff));
+  const sun = new Date(mon); sun.setDate(sun.getDate()+6);
+  return `${mon.getDate()} ${MONTHS[mon.getMonth()]} – ${sun.getDate()} ${MONTHS[sun.getMonth()]}`;
+}
+
+function getWeekDots(areaId) {
+  const wk = weekKey();
+  const dayData = APP_DATA.days || {};
+  const today = new Date();
+  const todayStr = todayKey();
+  let dots = [];
+  for(let i=0;i<7;i++) {
+    const d = new Date(wk); d.setDate(d.getDate()+i);
+    const dk = d.toISOString().slice(0,10);
+    const isToday = dk === todayStr;
+    const isFuture = d > today && !isToday;
+    const dayEntry = dayData[dk] || {};
+    const done = dayEntry[areaId] === 'done';
+    dots.push({ done, isToday, isFuture });
+  }
+  return dots;
+}
+
+function renderWeeklyAreas() {
+  const wk = weekKey();
+  const weekData = APP_DATA.weeks?.[wk] || {};
+  let html = '';
+  AREAS.forEach(area => {
+    const dots = getWeekDots(area.id);
+    const depth = weekData[`depth_${area.id}`] || '';
+    const doneCount = dots.filter(d=>d.done).length;
+    const totalPast = dots.filter(d=>!d.isFuture).length;
+    html += `
+    <div class="week-area">
+      <div class="wa-header">
+        <div class="wa-title">${area.label}</div>
+        <span style="font-size:12px;color:var(--text-tertiary);">${doneCount}/${totalPast} days</span>
+      </div>
+      <div class="week-dots">
+        ${dots.map(d=>`<div class="wd ${d.isToday?'today':d.done?'done':d.isFuture?'':'missed'}"></div>`).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:6px;">Depth this week</div>
+      <div class="depth-row">
+        <div class="depth-opt ${depth==='surface'?'sel-surface':''}" onclick="setDepth('${area.id}','surface')">Surface</div>
+        <div class="depth-opt ${depth==='engaged'?'sel-engaged':''}" onclick="setDepth('${area.id}','engaged')">Engaged</div>
+        <div class="depth-opt ${depth==='deep'?'sel-deep':''}" onclick="setDepth('${area.id}','deep')">Deep</div>
+      </div>
+      <div class="week-journal-q">${area.q}</div>
+    </div>`;
+  });
+  document.getElementById('weekly-areas').innerHTML = html;
+}
+
+function setDepth(areaId, val) {
+  const wk = weekKey();
+  if(!APP_DATA.weeks) APP_DATA.weeks = {};
+  if(!APP_DATA.weeks[wk]) APP_DATA.weeks[wk] = {};
+  APP_DATA.weeks[wk][`depth_${areaId}`] = val;
+  saveAppData();
+  renderWeeklyAreas();
+  updateMomentumBadges();
+}
+
+function setMomentum(val) {
+  const wk = weekKey();
+  if(!APP_DATA.weeks) APP_DATA.weeks = {};
+  if(!APP_DATA.weeks[wk]) APP_DATA.weeks[wk] = {};
+  APP_DATA.weeks[wk].momentum = val;
+  saveAppData();
+  loadWeeklyState();
+}
+
+function loadWeeklyState() {
+  const wk = weekKey();
+  const weekData = APP_DATA.weeks?.[wk] || {};
+  const mom = weekData.momentum || '';
+  ['better','same','worse'].forEach(v => {
+    const el = document.getElementById(`mom-${v}`);
+    el.className = `mom-opt ${mom===v?`sel-${v}`:''}`;
+  });
+  const carry = APP_DATA.carry_next || '';
+  if(carry) document.getElementById('carry-input').value = carry;
+  updateMomentumBadges();
+}
+
+function updateMomentumBadges() {}
+
+function saveCarry() {
+  const val = document.getElementById('carry-input').value.trim();
+  APP_DATA.carry_next = val;
+  saveAppData();
+  const btn = document.querySelector('.save-carry');
+  btn.textContent = 'Saved';
+  setTimeout(() => btn.textContent = 'Save', 1500);
+}
+
+function renderCarryForward() {
+  const carry = APP_DATA.carry_current || '';
+  const card = document.getElementById('carry-card');
+  if(carry) {
+    card.style.display = 'block';
+    document.getElementById('carry-display').textContent = carry;
+  } else { card.style.display = 'none'; }
+}
+
+// ─── MENTOR ───────────────────────────────────────────────────────────────────
+function mentorWC(el, countId, max) {
+  const words = el.value.trim() ? el.value.trim().split(/\s+/).length : 0;
+  document.getElementById(countId).textContent = `${words} / ${max} words`;
+}
+
+async function callMentor(type) {
+  if (!SESSION_KEY) { alert('Session expired. Please lock and unlock the app.'); return; }
+  const inputEl = document.getElementById(`mentor-${type}-input`);
+  const loadEl = document.getElementById(`mentor-${type}-loading`);
+  const respEl = document.getElementById(`mentor-${type}-response`);
+  const btnEl = document.getElementById(`mentor-${type}-btn`);
+  const text = inputEl.value.trim();
+  if (!text) { alert('Please write your update first.'); return; }
+
+  const goal = type === 'research' ? APP_DATA.researchGoal : APP_DATA.financeGoal;
+  const systemPrompt = type === 'research'
+    ? `You are a direct, honest research mentor. The user is a 27-year-old Pakistani female academic doing a PhD in CS while working full-time. Her research focus is LLM code generation security. She has 7 published papers. Her stated monthly goal is: "${goal}". She will give you a 30-40 word update on what she actually worked on. Your job is to give ONE pointed observation — not encouragement, not a task list. Just a mirror. Point out the gap between what she said she'd do and what she described doing. Be honest but not harsh. Maximum 3 sentences.`
+    : `You are a direct financial accountability partner. The user is a Pakistani academic earning above 100k PKR monthly with a 30k household obligation. She overspends invisibly — mainly on food, dining out, giving to others, and impulse digital purchases. Her stated financial intention this month is: "${goal}". She will describe how her food spending is tracking. Your job is to give ONE pointed observation about the pattern you see in what she describes. Not advice — a mirror. Maximum 3 sentences.`;
+
+  btnEl.disabled = true;
+  loadEl.classList.add('visible');
+  respEl.classList.remove('visible');
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SESSION_KEY}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 150,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text }
+        ]
+      })
+    });
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'No response received.';
+    respEl.textContent = reply;
+    respEl.classList.add('visible');
+    const wk = weekKey();
+    if(!APP_DATA.mentor_log) APP_DATA.mentor_log = [];
+    APP_DATA.mentor_log.push({ type, date: todayKey(), input: text, response: reply });
+    if(APP_DATA.mentor_log.length > 20) APP_DATA.mentor_log = APP_DATA.mentor_log.slice(-20);
+    saveAppData();
+  } catch(e) {
+    respEl.textContent = 'Could not reach OpenAI. Check your connection and try again.';
+    respEl.classList.add('visible');
+  }
+  loadEl.classList.remove('visible');
+  btnEl.disabled = false;
+}
+
+function loadMentorResponses() {
+  const log = APP_DATA.mentor_log || [];
+  ['research','finance'].forEach(type => {
+    const last = [...log].reverse().find(l => l.type === type);
+    if(last) {
+      const el = document.getElementById(`mentor-${type}-response`);
+      el.textContent = last.response;
+      el.classList.add('visible');
+      document.getElementById(`mentor-${type}-input`).value = last.input;
+    }
+  });
+}
+
+function updateGoals() {
+  const rg = document.getElementById('update-research-goal').value.trim();
+  const fg = document.getElementById('update-finance-goal').value.trim();
+  if(rg) { APP_DATA.researchGoal = rg; document.getElementById('mentor-research-goal').textContent = rg; }
+  if(fg) { APP_DATA.financeGoal = fg; document.getElementById('mentor-finance-goal').textContent = fg; }
+  saveAppData();
+  alert('Goals updated.');
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────────
+function exportBlob() {
+  const blob = localStorage.getItem('amanah_encrypted_key');
+  if(!blob) { alert('No key found.'); return; }
+  const el = document.createElement('textarea');
+  el.value = blob;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  alert('Encrypted key blob copied to clipboard. Save it somewhere safe — you can use it to restore your key if needed.');
+}
+
+function clearAll() {
+  if(!confirm('This will delete all your data and settings. Are you sure?')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+// ─── UTILITY ──────────────────────────────────────────────────────────────────
+function countWords(el, countId, max) {
+  const words = el.value.trim() ? el.value.trim().split(/\s+/).length : 0;
+  const el2 = document.getElementById(countId);
+  el2.textContent = `${words} / ${max} words`;
+  el2.className = `word-count ${words > max ? 'over' : ''}`;
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+initPassScreen();
+</script>
+</body>
+</html>
